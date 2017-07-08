@@ -3,22 +3,18 @@
 declare var test: Function;
 declare var expect: Function;
 
-import createOperation from '../createOperation';
 import createModule from '../createModule';
+import createOperation from '../createOperation';
 
-const increment = createOperation({
-  actionType: 'INCREMENT',
-  reducer: state => state + 1
-});
-
-const decrement = createOperation({
-  actionType: 'DECREMENT',
-  reducer: state => state - 1
-});
-
-const counter = createModule('COUNTER', {
-  increment,
-  decrement
+const counter = createModule('counter', {
+  increment: createOperation({
+    actionType: 'INCREMENT',
+    reducer: state => state + 1
+  }),
+  decrement: createOperation({
+    actionType: 'DECREMENT',
+    reducer: state => state - 1
+  })
 })(0);
 
 test('the initial state is zero', () => {

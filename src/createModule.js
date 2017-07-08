@@ -1,5 +1,7 @@
 // @flow
 
+import { all } from 'redux-saga/effects';
+
 type ExtractActionCreator = <V>(
   (...args: Array<*>) => { actionCreator: V }
 ) => V;
@@ -11,7 +13,8 @@ export default function createModule<OperationsMap: { [key: string]: * }>(
   initialState: *
 ) => {
   actions: $ObjMap<OperationsMap, ExtractActionCreator>,
-  reducer: Function
+  reducer: *,
+  saga: *
 } {
   const operations = {};
   const actions = {};
@@ -27,6 +30,15 @@ export default function createModule<OperationsMap: { [key: string]: * }>(
 
   const operationsReducer = composeOperationReducers(operations);
 
+  const defaultSaga = function*() {
+    yield all(
+      Object.keys(operations).map(actionName => {
+        const saga = operations[actionName].saga || function*() {};
+        return saga();
+      })
+    );
+  };
+
   return (initialState: *) => {
     const defaultReducer = (state: *, action: *) => {
       if (state === undefined) {
@@ -38,6 +50,7 @@ export default function createModule<OperationsMap: { [key: string]: * }>(
 
     return {
       reducer: defaultReducer,
+      saga: defaultSaga,
       actions
     };
   };
