@@ -24,7 +24,7 @@ export default function createAsyncOperation<
 }: {
   actionType: string,
   actionCreator?: ActionCreator,
-  request?: () => Promise<*>,
+  request?: (...args: Array<*>) => Promise<*>,
   reducer: Reducer,
   saga?: *
 }): AsyncOperation<ActionCreator, Reducer, Saga> {
