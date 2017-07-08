@@ -28,12 +28,8 @@ test('async operation reducer', () => {
   store.dispatch(posts.actions.findResource(123));
 
   return nextStoreState(store).then(state => {
-    expect(state).toEqual({
-      resourcesById: {
-        '123': {
-          title: 'Test Post'
-        }
-      }
+    expect(posts.selectors.getResource(state, 123)).toEqual({
+      title: 'Test Post'
     });
   });
 });

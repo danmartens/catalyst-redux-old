@@ -1,15 +1,17 @@
 // @flow
 
-import { createStore, applyMiddleware } from 'redux';
+import { createStore, applyMiddleware, combineReducers } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 
 export function storeForModule(
-  module: { reducer: Function, saga: Function },
+  module: { reducer: Function, saga: Function, moduleName: string },
   initialSate: Object = {}
 ) {
   const sagaMiddleware = createSagaMiddleware();
   const store = createStore(
-    module.reducer,
+    combineReducers({
+      [module.moduleName]: module.reducer
+    }),
     initialSate,
     applyMiddleware(sagaMiddleware)
   );

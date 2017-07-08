@@ -6,29 +6,33 @@ declare var expect: Function;
 import createModule from '../createModule';
 import createAsyncOperation from '../createAsyncOperation';
 
-const currentUser = createModule('currentUser', {
-  fetch: createAsyncOperation({
-    actionType: 'FETCH',
-    reducer: (state, action) => {
-      switch (action.status) {
-        case 'pending': {
-          return { ...state, fetchStatus: 'pending' };
+const currentUser = createModule(
+  'currentUser',
+  {
+    fetch: createAsyncOperation({
+      actionType: 'FETCH',
+      reducer: (state, action) => {
+        switch (action.status) {
+          case 'pending': {
+            return { ...state, fetchStatus: 'pending' };
+          }
+
+          case 'success': {
+            return { ...state, fetchStatus: 'success', user: action.payload };
+          }
+
+          case 'error': {
+            return { ...state, fetchStatus: 'error' };
+          }
         }
 
-        case 'success': {
-          return { ...state, fetchStatus: 'success', user: action.payload };
-        }
-
-        case 'error': {
-          return { ...state, fetchStatus: 'error' };
-        }
-      }
-
-      return state;
-    },
-    request: () => Promise.resolve({ name: 'Jane Doe' })
-  })
-})({
+        return state;
+      },
+      request: () => Promise.resolve({ name: 'Jane Doe' })
+    })
+  },
+  {}
+)({
   fetchStatus: null,
   user: null
 });

@@ -6,13 +6,19 @@ type ExtractActionCreator = <V>(
   (...args: Array<*>) => { actionCreator: V }
 ) => V;
 
-export default function createModule<OperationsMap: { [key: string]: * }>(
-  actionTypePrefix: string,
-  operationsMap: OperationsMap
+export default function createModule<
+  OperationsMap: { [key: string]: * },
+  Selectors: { [key: string]: * }
+>(
+  moduleName: string,
+  operationsMap: OperationsMap,
+  selectors: Selectors
 ): (
   initialState: *
 ) => {
+  moduleName: string,
   actions: $ObjMap<OperationsMap, ExtractActionCreator>,
+  selectors: Selectors,
   reducer: *,
   saga: *
 } {
@@ -21,7 +27,7 @@ export default function createModule<OperationsMap: { [key: string]: * }>(
 
   for (const actionName in operationsMap) {
     if (operationsMap.hasOwnProperty(actionName)) {
-      const operation = operationsMap[actionName](actionTypePrefix);
+      const operation = operationsMap[actionName](moduleName);
 
       operations[actionName] = operation;
       actions[actionName] = operation.actionCreator;
@@ -39,6 +45,11 @@ export default function createModule<OperationsMap: { [key: string]: * }>(
     );
   };
 
+  const mappedSelectors = ((mapSelectors(
+    moduleName,
+    selectors
+  ): any): Selectors);
+
   return (initialState: *) => {
     const defaultReducer = (state: *, action: *) => {
       if (state === undefined) {
@@ -49,11 +60,25 @@ export default function createModule<OperationsMap: { [key: string]: * }>(
     };
 
     return {
+      moduleName,
       reducer: defaultReducer,
       saga: defaultSaga,
+      selectors: mappedSelectors,
       actions
     };
   };
+}
+
+function mapSelectors(stateKey: string, selectors: *) {
+  const mappedSelectors = {};
+
+  Object.keys(selectors).forEach(selectorName => {
+    mappedSelectors[selectorName] = (state, ...args) => {
+      return selectors[selectorName](state[stateKey], ...args);
+    };
+  });
+
+  return mappedSelectors;
 }
 
 function composeOperationReducers(operations: {

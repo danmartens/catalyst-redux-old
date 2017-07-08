@@ -19,7 +19,13 @@ export default function createResourceModule(
     })
   };
 
-  return createModule(actionTypePrefix, operationsMap)({
+  const selectors = {
+    getResource(state: ResourceModuleState, resourceId: number | string) {
+      return state.resourcesById[resourceId.toString()];
+    }
+  };
+
+  return createModule(actionTypePrefix, operationsMap, selectors)({
     resourcesById: {}
   });
 }

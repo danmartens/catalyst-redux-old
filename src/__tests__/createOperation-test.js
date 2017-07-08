@@ -6,16 +6,20 @@ declare var expect: Function;
 import createModule from '../createModule';
 import createOperation from '../createOperation';
 
-const counter = createModule('counter', {
-  increment: createOperation({
-    actionType: 'INCREMENT',
-    reducer: state => state + 1
-  }),
-  decrement: createOperation({
-    actionType: 'DECREMENT',
-    reducer: state => state - 1
-  })
-})(0);
+const counter = createModule(
+  'counter',
+  {
+    increment: createOperation({
+      actionType: 'INCREMENT',
+      reducer: state => state + 1
+    }),
+    decrement: createOperation({
+      actionType: 'DECREMENT',
+      reducer: state => state - 1
+    })
+  },
+  {}
+)(0);
 
 test('the initial state is zero', () => {
   expect(counter.reducer()).toEqual(0);
