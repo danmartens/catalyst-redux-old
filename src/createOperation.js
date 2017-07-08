@@ -21,17 +21,22 @@ export default function createOperation<ActionCreator: *, Reducer: *>({
       ...actionCreator(...args)
     });
 
-    const newReducer = (state, action) => {
-      if (action.type === type) {
-        return reducer(state, action);
-      } else {
-        return state;
-      }
-    };
-
     return {
       actionCreator: ((newActionCreator: any): ActionCreator),
-      reducer: ((newReducer: any): Reducer)
+      reducer: ((reducerForActionType(reducer, type): any): Reducer)
     };
+  };
+}
+
+function reducerForActionType(
+  reducer: (state: *, action: *) => *,
+  actionType: string
+): * {
+  return (state: *, action): * => {
+    if (action.type === actionType) {
+      return reducer(state, action);
+    } else {
+      return state;
+    }
   };
 }
