@@ -16,6 +16,9 @@ export default function createResourceModule(
   const operationsMap = {
     findResource: createFindResourceOperation({
       buildURL: options.buildURL
+    }),
+    destroyResource: createDestroyResourceOperation({
+      buildURL: options.buildURL
     })
   };
 
@@ -68,4 +71,56 @@ function createFindResourceOperation({
       return state;
     }
   });
+}
+
+function createDestroyResourceOperation({
+  buildURL,
+  normalizeResponse = response => response.data
+}: {
+  buildURL: (id: string | number) => string,
+  normalizeResponse?: Function
+}) {
+  return createAsyncOperation({
+    actionType: 'DESTROY_RESOURCE',
+    actionCreator: (resourceId: number | string) => {
+      return {
+        payload: resourceId,
+        status: null
+      };
+    },
+    request: (action: { payload: number | string }) => {
+      return axios.delete(buildURL(action.payload)).then(() => ({
+        data: {
+          id: action.payload
+        }
+      }));
+    },
+    reducer: (state: ResourceModuleState, action): ResourceModuleState => {
+      switch (action.status) {
+        case 'success': {
+          const { data } = action.payload;
+
+          return removeResourceFromState(state, data.id);
+        }
+      }
+
+      return state;
+    }
+  });
+}
+
+function removeResourceFromState(
+  state: ResourceModuleState,
+  resourceId: number | string
+): ResourceModuleState {
+  const resourcesById = {
+    ...state.resourcesById
+  };
+
+  delete resourcesById[resourceId.toString()];
+
+  return {
+    ...state,
+    resourcesById
+  };
 }

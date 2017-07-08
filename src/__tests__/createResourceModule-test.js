@@ -15,7 +15,7 @@ const posts = createResourceModule('posts', {
 
 afterEach(axios.__clearRegisteredResponses);
 
-test('async operation reducer', () => {
+test('findResource action', () => {
   axios.__registerResponse('GET', '/api/posts/123', {
     data: {
       id: '123',
@@ -30,6 +30,28 @@ test('async operation reducer', () => {
   return nextStoreState(store).then(state => {
     expect(posts.selectors.getResource(state, 123)).toEqual({
       title: 'Test Post'
+    });
+  });
+});
+
+test('destroyResource action', () => {
+  axios.__registerResponse('DELETE', '/api/posts/1', {});
+
+  const store = storeForModule(posts, {
+    posts: {
+      resourcesById: {
+        '1': { title: 'First Post' },
+        '2': { title: 'Second Post' }
+      }
+    }
+  });
+
+  store.dispatch(posts.actions.destroyResource(1));
+
+  return nextStoreState(store).then(state => {
+    expect(posts.selectors.getResource(state, 1)).toEqual(undefined);
+    expect(posts.selectors.getResource(state, 2)).toEqual({
+      title: 'Second Post'
     });
   });
 });
