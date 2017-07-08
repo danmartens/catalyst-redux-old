@@ -1,6 +1,6 @@
 // @flow
 
-type Operation<ActionCreator: *, Reducer: *> = (
+type Operation<ActionCreator, Reducer> = (
   actionTypePrefix: string
 ) => { actionCreator: ActionCreator, reducer: Reducer };
 
