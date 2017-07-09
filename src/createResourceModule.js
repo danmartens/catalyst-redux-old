@@ -5,6 +5,8 @@ import axios from 'axios';
 import createModule from './createModule';
 import createAsyncOperation from './createAsyncOperation';
 
+export type ResourceID = string | number;
+
 export type ResourceModuleState = {
   resourcesById: { [string]: Object }
 };
@@ -12,7 +14,7 @@ export type ResourceModuleState = {
 export default function createResourceModule(
   actionTypePrefix: string,
   options: {
-    resourceURL: (id: string | number) => string,
+    resourceURL: (id: ResourceID) => string,
     resourcesURL: () => string
   }
 ) {
@@ -23,14 +25,17 @@ export default function createResourceModule(
     createResource: createCreateResourceOperation({
       resourcesURL: options.resourcesURL
     }),
+    updateResource: createUpdateResourceOperation({
+      resourceURL: options.resourceURL
+    }),
     destroyResource: createDestroyResourceOperation({
       resourceURL: options.resourceURL
     })
   };
 
   const selectors = {
-    getResource(state: ResourceModuleState, resourceId: number | string) {
-      return state.resourcesById[resourceId.toString()];
+    getResource(state: ResourceModuleState, id: ResourceID) {
+      return state.resourcesById[id.toString()];
     }
   };
 
@@ -43,18 +48,18 @@ function createFindResourceOperation({
   resourceURL,
   normalizeResponse = response => response.data
 }: {
-  resourceURL: (id: string | number) => string,
+  resourceURL: (id: ResourceID) => string,
   normalizeResponse?: Function
 }) {
   return createAsyncOperation({
     actionType: 'FIND_RESOURCE',
-    actionCreator: (resourceId: number | string) => {
+    actionCreator: (resourceId: ResourceID) => {
       return {
         payload: resourceId,
         status: null
       };
     },
-    request: (action: { payload: number | string }) => {
+    request: (action: { payload: ResourceID }) => {
       return axios
         .get(resourceURL(action.payload))
         .then(response => normalizeResponse(response));
@@ -77,20 +82,54 @@ function createCreateResourceOperation({
   resourcesURL,
   normalizeResponse = response => response.data
 }: {
-  resourcesURL: (id?: string | number) => string,
+  resourcesURL: () => string,
   normalizeResponse?: Function
 }) {
   return createAsyncOperation({
     actionType: 'CREATE_RESOURCE',
-    actionCreator: (resourceAttributes: Object) => {
+    actionCreator: (attributes: Object) => {
       return {
-        payload: resourceAttributes,
+        payload: attributes,
         status: null
       };
     },
     request: (action: { payload: Object }) => {
       return axios
         .post(resourcesURL(), action.payload)
+        .then(response => normalizeResponse(response));
+    },
+    reducer: (state: ResourceModuleState, action): ResourceModuleState => {
+      switch (action.status) {
+        case 'success': {
+          const { data } = action.payload;
+
+          return addResource(state, data.id, data.attributes);
+        }
+      }
+
+      return state;
+    }
+  });
+}
+
+function createUpdateResourceOperation({
+  resourceURL,
+  normalizeResponse = response => response.data
+}: {
+  resourceURL: (id: ResourceID) => string,
+  normalizeResponse?: Function
+}) {
+  return createAsyncOperation({
+    actionType: 'UPDATE_RESOURCE',
+    actionCreator: (id: ResourceID, attributes: Object) => {
+      return {
+        payload: { id, attributes },
+        status: null
+      };
+    },
+    request: (action: { payload: { id: ResourceID, attributes: Object } }) => {
+      return axios
+        .patch(resourceURL(action.payload.id), action.payload.attributes)
         .then(response => normalizeResponse(response));
     },
     reducer: (state: ResourceModuleState, action): ResourceModuleState => {
@@ -116,13 +155,13 @@ function createDestroyResourceOperation({
 }) {
   return createAsyncOperation({
     actionType: 'DESTROY_RESOURCE',
-    actionCreator: (resourceId: number | string) => {
+    actionCreator: (resourceId: ResourceID) => {
       return {
         payload: resourceId,
         status: null
       };
     },
-    request: (action: { payload: number | string }) => {
+    request: (action: { payload: ResourceID }) => {
       return axios.delete(resourceURL(action.payload)).then(() => ({
         data: {
           id: action.payload
@@ -145,12 +184,12 @@ function createDestroyResourceOperation({
 
 function addResource(
   state: ResourceModuleState,
-  resourceId: number | string,
-  resourceAttributes: Object
+  resourceId: ResourceID,
+  attributes: Object
 ): ResourceModuleState {
   const resourcesById = {
     ...state.resourcesById,
-    [resourceId.toString()]: resourceAttributes
+    [resourceId.toString()]: attributes
   };
 
   return {
@@ -161,7 +200,7 @@ function addResource(
 
 function removeResource(
   state: ResourceModuleState,
-  resourceId: number | string
+  resourceId: ResourceID
 ): ResourceModuleState {
   const resourcesById = {
     ...state.resourcesById

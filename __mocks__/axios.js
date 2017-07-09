@@ -3,6 +3,7 @@ import { isFunction } from 'lodash';
 let responses = {
   GET: {},
   POST: {},
+  PATCH: {},
   DELETE: {}
 };
 
@@ -17,8 +18,8 @@ const axios = {
     return promiseFromResponse(response, data);
   },
 
-  put: (url, data) => {
-    const response = responses.PUT[url];
+  patch: (url, data) => {
+    const response = responses.PATCH[url];
     return promiseFromResponse(response, data);
   },
 
@@ -36,6 +37,7 @@ axios.__clearRegisteredResponses = function() {
   responses = {
     GET: {},
     POST: {},
+    PATCH: {},
     DELETE: {}
   };
 };

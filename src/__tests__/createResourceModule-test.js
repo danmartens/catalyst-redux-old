@@ -16,6 +16,25 @@ const posts = createResourceModule('posts', {
 
 afterEach(axios.__clearRegisteredResponses);
 
+test('findResource action', () => {
+  axios.__registerResponse('GET', '/api/posts/123', {
+    data: {
+      id: '123',
+      attributes: { title: 'Test Post' }
+    }
+  });
+
+  const store = storeForModule(posts);
+
+  store.dispatch(posts.actions.findResource(123));
+
+  return nextStoreState(store).then(state => {
+    expect(posts.selectors.getResource(state, 123)).toEqual({
+      title: 'Test Post'
+    });
+  });
+});
+
 test('createResource action', () => {
   axios.__registerResponse('POST', '/api/posts', data => {
     return {
@@ -37,21 +56,38 @@ test('createResource action', () => {
   });
 });
 
-test('findResource action', () => {
-  axios.__registerResponse('GET', '/api/posts/123', {
-    data: {
-      id: '123',
-      attributes: { title: 'Test Post' }
+test('updateResource action', () => {
+  axios.__registerResponse('PATCH', '/api/posts/1', data => {
+    return {
+      data: {
+        id: 1,
+        attributes: data
+      }
+    };
+  });
+
+  const store = storeForModule(posts, {
+    posts: {
+      resourcesById: {
+        '1': { title: 'First Post' },
+        '2': { title: 'Second Post' }
+      }
     }
   });
 
-  const store = storeForModule(posts);
-
-  store.dispatch(posts.actions.findResource(123));
+  store.dispatch(
+    posts.actions.updateResource(1, {
+      title: 'Edited Post'
+    })
+  );
 
   return nextStoreState(store).then(state => {
-    expect(posts.selectors.getResource(state, 123)).toEqual({
-      title: 'Test Post'
+    expect(posts.selectors.getResource(state, 1)).toEqual({
+      title: 'Edited Post'
+    });
+
+    expect(posts.selectors.getResource(state, 2)).toEqual({
+      title: 'Second Post'
     });
   });
 });
