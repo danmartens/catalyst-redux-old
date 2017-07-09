@@ -10,10 +10,32 @@ import { storeForModule, nextStoreState } from '../test-utils';
 import createResourceModule from '../createResourceModule';
 
 const posts = createResourceModule('posts', {
-  buildURL: id => `/api/posts/${id}`
+  resourcesURL: () => '/api/posts',
+  resourceURL: id => `/api/posts/${id}`
 });
 
 afterEach(axios.__clearRegisteredResponses);
+
+test('createResource action', () => {
+  axios.__registerResponse('POST', '/api/posts', data => {
+    return {
+      data: {
+        id: 1,
+        attributes: data
+      }
+    };
+  });
+
+  const store = storeForModule(posts);
+
+  store.dispatch(posts.actions.createResource({ title: 'A New Post' }));
+
+  return nextStoreState(store).then(state => {
+    expect(posts.selectors.getResource(state, 1)).toEqual({
+      title: 'A New Post'
+    });
+  });
+});
 
 test('findResource action', () => {
   axios.__registerResponse('GET', '/api/posts/123', {

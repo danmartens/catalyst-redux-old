@@ -1,3 +1,5 @@
+import { isFunction } from 'lodash';
+
 let responses = {
   GET: {},
   POST: {},
@@ -10,14 +12,14 @@ const axios = {
     return promiseFromResponse(response);
   },
 
-  post: url => {
+  post: (url, data) => {
     const response = responses.POST[url];
-    return promiseFromResponse(response);
+    return promiseFromResponse(response, data);
   },
 
-  put: url => {
+  put: (url, data) => {
     const response = responses.PUT[url];
-    return promiseFromResponse(response);
+    return promiseFromResponse(response, data);
   },
 
   delete: url => {
@@ -38,12 +40,20 @@ axios.__clearRegisteredResponses = function() {
   };
 };
 
-function promiseFromResponse(response) {
+function promiseFromResponse(response, requestData) {
   if (response != null) {
-    if (response.status < 400) {
-      return Promise.resolve({ data: response.data });
+    let responseData;
+
+    if (isFunction(response.data)) {
+      responseData = response.data(requestData);
     } else {
-      return Promise.reject({ data: response.data });
+      responseData = response.data;
+    }
+
+    if (response.status < 400) {
+      return Promise.resolve({ data: responseData });
+    } else {
+      return Promise.reject({ data: responseData });
     }
   } else {
     return Promise.reject({});
