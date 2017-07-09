@@ -1,6 +1,6 @@
 // @flow
 
-import type { ResourceID, ResourceModuleState } from './types';
+import type { ResourceID, ResourceStatus, ResourceModuleState } from './types';
 
 export function reducerForActionType(
   reducer: (state: *, action: *) => *,
@@ -17,32 +17,46 @@ export function reducerForActionType(
 
 export function addResource(
   state: ResourceModuleState,
-  resourceId: ResourceID,
+  id: ResourceID,
   attributes: Object
 ): ResourceModuleState {
-  const resourcesById = {
-    ...state.resourcesById,
-    [resourceId.toString()]: attributes
+  const resources = {
+    ...state.resources,
+    [id.toString()]: attributes
   };
 
   return {
     ...state,
-    resourcesById
+    resources
   };
 }
 
 export function removeResource(
   state: ResourceModuleState,
-  resourceId: ResourceID
+  id: ResourceID
 ): ResourceModuleState {
-  const resourcesById = {
-    ...state.resourcesById
+  const resources = {
+    ...state.resources
   };
 
-  delete resourcesById[resourceId.toString()];
+  delete resources[id.toString()];
 
   return {
     ...state,
-    resourcesById
+    resources
+  };
+}
+
+export function setResourceStatus(
+  state: ResourceModuleState,
+  id: ResourceID,
+  status: ResourceStatus
+) {
+  return {
+    ...state,
+    resourceStatus: {
+      ...state.resourceStatus,
+      [id]: status
+    }
   };
 }

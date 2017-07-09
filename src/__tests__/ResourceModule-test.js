@@ -14,26 +14,15 @@ const posts = ResourceModule('posts', {
   resourceURL: id => `/api/posts/${id}`
 });
 
+const {
+  findResource,
+  createResource,
+  updateResource,
+  destroyResource
+} = posts.actions;
+const { getResource, getStatus } = posts.selectors;
+
 afterEach(axios.__clearRegisteredResponses);
-
-test('FindResourceOperation', () => {
-  axios.__registerResponse('GET', '/api/posts/123', {
-    data: {
-      id: '123',
-      attributes: { title: 'Test Post' }
-    }
-  });
-
-  const store = storeForModule(posts);
-
-  store.dispatch(posts.actions.findResource(123));
-
-  return nextStoreState(store).then(state => {
-    expect(posts.selectors.getResource(state, 123)).toEqual({
-      title: 'Test Post'
-    });
-  });
-});
 
 test('CreateResourceOperation', () => {
   axios.__registerResponse('POST', '/api/posts', data => {
@@ -47,10 +36,12 @@ test('CreateResourceOperation', () => {
 
   const store = storeForModule(posts);
 
-  store.dispatch(posts.actions.createResource({ title: 'A New Post' }));
+  store.dispatch(createResource({ title: 'A New Post' }));
 
   return nextStoreState(store).then(state => {
-    expect(posts.selectors.getResource(state, 1)).toEqual({
+    expect(getStatus(state, 1)).toEqual('create.success');
+
+    expect(getResource(state, 1)).toEqual({
       title: 'A New Post'
     });
   });
@@ -68,25 +59,30 @@ test('UpdateResourceOperation', () => {
 
   const store = storeForModule(posts, {
     posts: {
-      resourcesById: {
+      resources: {
         '1': { title: 'First Post' },
         '2': { title: 'Second Post' }
-      }
+      },
+      resourceStatus: {}
     }
   });
 
   store.dispatch(
-    posts.actions.updateResource(1, {
+    updateResource(1, {
       title: 'Edited Post'
     })
   );
 
+  expect(getStatus(store.getState(), 1)).toEqual('update.pending');
+
   return nextStoreState(store).then(state => {
-    expect(posts.selectors.getResource(state, 1)).toEqual({
+    expect(getStatus(state, 1)).toEqual('update.success');
+
+    expect(getResource(state, 1)).toEqual({
       title: 'Edited Post'
     });
 
-    expect(posts.selectors.getResource(state, 2)).toEqual({
+    expect(getResource(state, 2)).toEqual({
       title: 'Second Post'
     });
   });
@@ -97,18 +93,22 @@ test('DestroyResourceOperation', () => {
 
   const store = storeForModule(posts, {
     posts: {
-      resourcesById: {
+      resources: {
         '1': { title: 'First Post' },
         '2': { title: 'Second Post' }
-      }
+      },
+      resourceStatus: {}
     }
   });
 
-  store.dispatch(posts.actions.destroyResource(1));
+  store.dispatch(destroyResource(1));
+
+  expect(getStatus(store.getState(), 1)).toEqual('destroy.pending');
 
   return nextStoreState(store).then(state => {
-    expect(posts.selectors.getResource(state, 1)).toEqual(undefined);
-    expect(posts.selectors.getResource(state, 2)).toEqual({
+    expect(getStatus(state, 1)).toEqual('destroy.success');
+    expect(getResource(state, 1)).toEqual(undefined);
+    expect(getResource(state, 2)).toEqual({
       title: 'Second Post'
     });
   });

@@ -8,7 +8,7 @@ import CreateResourceOperation from './CreateResourceOperation';
 import UpdateResourceOperation from './UpdateResourceOperation';
 import DestroyResourceOperation from './DestroyResourceOperation';
 
-import type { ResourceID, ResourceModuleState } from './types';
+import type { ResourceID, ResourceStatus, ResourceModuleState } from './types';
 
 export default function ResourceModule(
   moduleName: string,
@@ -34,11 +34,16 @@ export default function ResourceModule(
 
   const selectors = {
     getResource(state: ResourceModuleState, id: ResourceID) {
-      return state.resourcesById[id.toString()];
+      return state.resources[id.toString()];
+    },
+
+    getStatus(state: ResourceModuleState, id: ResourceID): ResourceStatus {
+      return state.resourceStatus[id.toString()];
     }
   };
 
   return Module(moduleName, operationsMap, selectors)({
-    resourcesById: {}
+    resources: {},
+    resourceStatus: {}
   });
 }
