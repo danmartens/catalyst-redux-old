@@ -31,6 +31,20 @@ export function addResource(
   };
 }
 
+export function replaceResources(
+  state: ResourceModuleState,
+  data: Array<{ id: ResourceID, attributes: Object }>
+): ResourceModuleState {
+  const resources = data.reduce((resources, resource) => {
+    return { ...resources, [resource.id]: resource.attributes };
+  }, {});
+
+  return {
+    ...state,
+    resources
+  };
+}
+
 export function removeResource(
   state: ResourceModuleState,
   id: ResourceID

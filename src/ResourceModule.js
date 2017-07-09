@@ -1,8 +1,10 @@
 // @flow
 
+import { values } from 'lodash';
 import axios from 'axios';
 
 import Module from './Module';
+import FindAllResourcesOperation from './FindAllResourcesOperation';
 import FindResourceOperation from './FindResourceOperation';
 import CreateResourceOperation from './CreateResourceOperation';
 import UpdateResourceOperation from './UpdateResourceOperation';
@@ -18,21 +20,28 @@ export default function ResourceModule(
   }
 ) {
   const operationsMap = {
-    findResource: FindResourceOperation({
-      resourceURL: options.resourceURL
-    }),
-    createResource: CreateResourceOperation({
+    findAll: FindAllResourcesOperation({
       resourcesURL: options.resourcesURL
     }),
-    updateResource: UpdateResourceOperation({
+    find: FindResourceOperation({
       resourceURL: options.resourceURL
     }),
-    destroyResource: DestroyResourceOperation({
+    create: CreateResourceOperation({
+      resourcesURL: options.resourcesURL
+    }),
+    update: UpdateResourceOperation({
+      resourceURL: options.resourceURL
+    }),
+    destroy: DestroyResourceOperation({
       resourceURL: options.resourceURL
     })
   };
 
   const selectors = {
+    getAll(state: ResourceModuleState) {
+      return values(state.resources);
+    },
+
     getResource(state: ResourceModuleState, id: ResourceID) {
       return state.resources[id.toString()];
     },

@@ -14,12 +14,7 @@ const posts = ResourceModule('posts', {
   resourceURL: id => `/api/posts/${id}`
 });
 
-const {
-  findResource,
-  createResource,
-  updateResource,
-  destroyResource
-} = posts.actions;
+const { create, update, destroy } = posts.actions;
 const { getResource, getStatus } = posts.selectors;
 
 afterEach(axios.__clearRegisteredResponses);
@@ -36,7 +31,7 @@ test('CreateResourceOperation', () => {
 
   const store = storeForModule(posts);
 
-  store.dispatch(createResource({ title: 'A New Post' }));
+  store.dispatch(create({ title: 'A New Post' }));
 
   return nextStoreState(store).then(state => {
     expect(getStatus(state, 1)).toEqual('create.success');
@@ -68,7 +63,7 @@ test('UpdateResourceOperation', () => {
   });
 
   store.dispatch(
-    updateResource(1, {
+    update(1, {
       title: 'Edited Post'
     })
   );
@@ -101,7 +96,7 @@ test('DestroyResourceOperation', () => {
     }
   });
 
-  store.dispatch(destroyResource(1));
+  store.dispatch(destroy(1));
 
   expect(getStatus(store.getState(), 1)).toEqual('destroy.pending');
 

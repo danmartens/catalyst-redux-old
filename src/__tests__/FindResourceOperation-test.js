@@ -14,7 +14,7 @@ const posts = ResourceModule('posts', {
   resourceURL: id => `/api/posts/${id}`
 });
 
-const { findResource } = posts.actions;
+const { find } = posts.actions;
 const { getResource, getStatus } = posts.selectors;
 
 afterEach(axios.__clearRegisteredResponses);
@@ -29,7 +29,7 @@ test('FindResourceOperation success', () => {
 
   const store = storeForModule(posts);
 
-  store.dispatch(findResource(1));
+  store.dispatch(find(1));
 
   expect(getStatus(store.getState(), 1)).toEqual('find.pending');
 
@@ -46,7 +46,7 @@ test('FindResourceOperation error', () => {
 
   const store = storeForModule(posts);
 
-  store.dispatch(findResource(1));
+  store.dispatch(find(1));
 
   expect(getStatus(store.getState(), 1)).toEqual('find.pending');
 
