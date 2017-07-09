@@ -3,7 +3,7 @@
 import { takeEvery, put, call } from 'redux-saga/effects';
 import { reducerForActionType } from './utils';
 
-type AsyncOperation<ActionCreator, Reducer, Saga> = (
+type AsyncOperationType<ActionCreator, Reducer, Saga> = (
   actionTypePrefix: string
 ) => {
   actionCreator: ActionCreator,
@@ -11,7 +11,7 @@ type AsyncOperation<ActionCreator, Reducer, Saga> = (
   saga: Generator<*, *, *>
 };
 
-export default function createAsyncOperation<
+export default function AsyncOperation<
   ActionCreator: *,
   Reducer: *,
   Saga: Generator<*, *, *>
@@ -27,7 +27,7 @@ export default function createAsyncOperation<
   request?: (...args: Array<*>) => Promise<*>,
   reducer: Reducer,
   saga?: *
-}): AsyncOperation<ActionCreator, Reducer, Saga> {
+}): AsyncOperationType<ActionCreator, Reducer, Saga> {
   return (actionTypePrefix: string) => {
     const type = `${actionTypePrefix}/${actionType}`;
 

@@ -3,17 +3,17 @@
 declare var test: Function;
 declare var expect: Function;
 
-import createModule from '../createModule';
-import createOperation from '../createOperation';
+import Module from '../Module';
+import Operation from '../Operation';
 
-const counter = createModule(
+const counter = Module(
   'counter',
   {
-    increment: createOperation({
+    increment: Operation({
       actionType: 'INCREMENT',
       reducer: state => state + 1
     }),
-    decrement: createOperation({
+    decrement: Operation({
       actionType: 'DECREMENT',
       reducer: state => state - 1
     })

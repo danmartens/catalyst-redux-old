@@ -2,11 +2,11 @@
 
 import { reducerForActionType } from './utils';
 
-type Operation<ActionCreator, Reducer> = (
+type OperationType<ActionCreator, Reducer> = (
   actionTypePrefix: string
 ) => { actionCreator: ActionCreator, reducer: Reducer };
 
-export default function createOperation<ActionCreator: *, Reducer: *>({
+export default function Operation<ActionCreator: *, Reducer: *>({
   actionType,
   actionCreator = (payload = null) => ({ payload }),
   reducer
@@ -14,7 +14,7 @@ export default function createOperation<ActionCreator: *, Reducer: *>({
   actionType: string,
   actionCreator?: ActionCreator,
   reducer: Reducer
-}): Operation<ActionCreator, Reducer> {
+}): OperationType<ActionCreator, Reducer> {
   return (actionTypePrefix: string) => {
     const type = `${actionTypePrefix}/${actionType}`;
 

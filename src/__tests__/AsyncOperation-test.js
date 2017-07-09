@@ -3,13 +3,13 @@
 declare var test: Function;
 declare var expect: Function;
 
-import createModule from '../createModule';
-import createAsyncOperation from '../createAsyncOperation';
+import Module from '../Module';
+import AsyncOperation from '../AsyncOperation';
 
-const currentUser = createModule(
+const currentUser = Module(
   'currentUser',
   {
-    fetch: createAsyncOperation({
+    fetch: AsyncOperation({
       actionType: 'FETCH',
       reducer: (state, action) => {
         switch (action.status) {

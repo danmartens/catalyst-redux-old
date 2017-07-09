@@ -1,6 +1,6 @@
 // @flow
 
-import createOperation from './createOperation';
-import createModule from './createModule';
+import Operation from './Operation';
+import Module from './Module';
 
-export { createOperation, createModule };
+export { Operation, Module };

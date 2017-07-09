@@ -6,7 +6,7 @@ type ExtractActionCreator = <V>(
   (...args: Array<*>) => { actionCreator: V }
 ) => V;
 
-export default function createModule<
+export default function Module<
   OperationsMap: { [key: string]: * },
   Selectors: { [key: string]: * }
 >(
