@@ -22,7 +22,7 @@ afterEach(axios.__clearRegisteredResponses);
 test('FindResourceOperation success', () => {
   axios.__registerResponse('GET', '/api/posts/1', {
     data: {
-      id: '1',
+      id: 1,
       attributes: { title: 'Test Post' }
     }
   });
@@ -36,6 +36,7 @@ test('FindResourceOperation success', () => {
   return nextStoreState(store).then(state => {
     expect(getStatus(state, 1)).toEqual('find.success');
     expect(getResource(state, 1)).toEqual({
+      id: 1,
       title: 'Test Post'
     });
   });

@@ -22,7 +22,7 @@ export function addResource(
 ): ResourceModuleState {
   const resources = {
     ...state.resources,
-    [id.toString()]: attributes
+    [id.toString()]: { id, ...attributes }
   };
 
   return {
@@ -36,7 +36,10 @@ export function replaceResources(
   data: Array<{ id: ResourceID, attributes: Object }>
 ): ResourceModuleState {
   const resources = data.reduce((resources, resource) => {
-    return { ...resources, [resource.id]: resource.attributes };
+    return {
+      ...resources,
+      [resource.id]: { id: resource.id, ...resource.attributes }
+    };
   }, {});
 
   return {
