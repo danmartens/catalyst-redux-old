@@ -21,9 +21,9 @@ const increment = Operation({
 });
 ```
 
-## Async Operations
+## AsyncOperations
 
-Sometimes an Operation needs to handle some asynchronous logic (e.g. making a request to your API and then processing the response). This is almost as simple to write as a synchronous operation:
+Sometimes an Operation needs to handle some asynchronous logic (e.g. making a request to your API and then storing the response). This is almost as simple to write as a synchronous operation:
 
 ```javascript
 const fetchArticles = AsyncOperation({
@@ -31,15 +31,25 @@ const fetchArticles = AsyncOperation({
   reducer: (state, action) => {
     switch (action.status) {
       case 'pending': {
-        return { ...state, fetchStatus: 'pending' };
+        return {
+          ...state, 
+          fetchStatus: 'pending'
+        };
       }
 
       case 'success': {
-        return { ...state, fetchStatus: 'success', articles: action.payload.data };
+        return {
+          ...state, 
+          fetchStatus: 'success', 
+          articles: action.payload.data
+        };
       }
 
       case 'error': {
-        return { ...state, fetchStatus: 'error' };
+        return {
+          ...state, 
+          fetchStatus: 'error'
+        };
       }
     }
 
