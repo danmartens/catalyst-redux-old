@@ -21,6 +21,34 @@ const increment = Operation({
 });
 ```
 
+## Async Operations
+
+Sometimes an Operation needs to handle some asynchronous logic (e.g. making a request to your API and then processing the response). This is almost as simple to write as a synchronous operation:
+
+```javascript
+const fetchArticles = AsyncOperation({
+  actionType: 'FETCH_ARTICLES',
+  reducer: (state, action) => {
+    switch (action.status) {
+      case 'pending': {
+        return { ...state, fetchStatus: 'pending' };
+      }
+
+      case 'success': {
+        return { ...state, fetchStatus: 'success', articles: action.payload.data };
+      }
+
+      case 'error': {
+        return { ...state, fetchStatus: 'error' };
+      }
+    }
+
+    return state;
+  },
+  request: () => axios.get('/api/articles').then(({ data }) => data)
+});
+```
+
 ## Modules
 
 Operations can be composed into a Module. A Module contains the reducer, saga, action creators, and selectors for a specific "slice" of your application state.
