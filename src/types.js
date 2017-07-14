@@ -2,6 +2,8 @@
 
 export type ResourceID = string | number;
 export type ResourceType = string;
+export type RelationshipName = string;
+export type Relationship = { type: ResourceType, id: ResourceID };
 
 export type ResourceStatus =
   | null
@@ -20,6 +22,13 @@ export type ResourceStatus =
 
 export type ResourceModuleState = {
   resources: { [ResourceType]: { [ResourceID]: Object } },
+  resourceRelationships: {
+    [ResourceType]: {
+      [ResourceID]: {
+        [RelationshipName]: Relationship | Array<Relationship>
+      }
+    }
+  },
   resourceStatus: { [ResourceType]: { [ResourceID]: ResourceStatus } }
 };
 
@@ -29,3 +38,19 @@ export type ResourcesConfig = {
     resourcesURL: () => string
   |}
 };
+
+export type JSONAPIResource = {|
+  type: ResourceType,
+  id: ResourceID,
+  attributes: Object,
+  relationships?: {
+    [RelationshipName]: {
+      data: Relationship | Array<Relationship>
+    }
+  }
+|};
+
+export type JSONAPIDocument = {|
+  data: JSONAPIResource | Array<JSONAPIResource>,
+  included?: Array<JSONAPIResource>
+|};

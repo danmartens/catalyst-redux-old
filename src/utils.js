@@ -4,7 +4,9 @@ import type {
   ResourceType,
   ResourceID,
   ResourceStatus,
-  ResourceModuleState
+  ResourceModuleState,
+  JSONAPIDocument,
+  JSONAPIResource
 } from './types';
 
 export function reducerForActionType(
@@ -22,31 +24,59 @@ export function reducerForActionType(
 
 export function addResource(
   state: ResourceModuleState,
-  type: ResourceType,
-  id: ResourceID,
-  attributes: Object
+  resource: JSONAPIResource
 ): ResourceModuleState {
-  if (state.resources[type] == null) {
+  if (state.resources[resource.type] == null) {
     return state;
   }
 
   const resources = {
     ...state.resources,
-    [type]: {
-      ...state.resources[type],
-      [id.toString()]: { id, ...attributes }
+    [resource.type]: {
+      ...state.resources[resource.type],
+      [resource.id.toString()]: { id: resource.id, ...resource.attributes }
+    }
+  };
+
+  const resourceRelationships = {
+    ...state.resourceRelationships,
+    [resource.type]: {
+      ...state.resourceRelationships[resource.type],
+      [resource.id.toString()]: resource.relationships || null
     }
   };
 
   return {
     ...state,
-    resources
+    resources,
+    resourceRelationships
   };
+}
+
+export function addResources(
+  state: ResourceModuleState,
+  resources: JSONAPIDocument
+): ResourceModuleState {
+  if (resources.data instanceof Array) {
+    resources.data.forEach(resource => {
+      state = addResource(state, resource);
+    });
+  } else {
+    state = addResource(state, resources.data);
+  }
+
+  if (resources.included instanceof Array) {
+    resources.included.forEach(resource => {
+      state = addResource(state, resource);
+    });
+  }
+
+  return state;
 }
 
 export function replaceResources(
   state: ResourceModuleState,
-  data: Array<{ id: ResourceID, attributes: Object }>
+  data: Array<JSONAPIResource>
 ): ResourceModuleState {
   const resources = data.reduce((resources, resource) => {
     return {

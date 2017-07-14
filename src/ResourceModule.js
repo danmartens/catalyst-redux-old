@@ -14,6 +14,7 @@ import type {
   ResourceID,
   ResourceType,
   ResourceStatus,
+  RelationshipName,
   ResourceModuleState,
   ResourcesConfig
 } from './types';
@@ -47,16 +48,35 @@ export default function ResourceModule(
       return values(state.resources);
     },
 
-    getResource(
+    getResource,
+
+    getRelated(
       state: ResourceModuleState,
       type: ResourceType,
-      id: ResourceID
-    ): null | Object {
-      if (state.resources[type] == null) {
+      id: ResourceID,
+      relationshipName: RelationshipName
+    ): null | Object | Array<?Object> {
+      if (
+        state.resourceRelationships[type] == null ||
+        state.resourceRelationships[type][id] == null
+      ) {
         return null;
       }
 
-      return state.resources[type][id.toString()] || null;
+      const relationship =
+        state.resourceRelationships[type][id][relationshipName];
+
+      if (relationship == null) {
+        return null;
+      }
+
+      if (relationship instanceof Array) {
+        return relationship.map(r => {
+          return getResource(state, r.type, r.id);
+        });
+      } else {
+        return getResource(state, relationship.type, relationship.id);
+      }
     },
 
     getStatus(
@@ -76,8 +96,21 @@ export default function ResourceModule(
 
   return Module(moduleName, operationsMap, selectors)({
     resources: buildResourceTypesMap(resourceTypes),
+    resourceRelationships: buildResourceTypesMap(resourceTypes),
     resourceStatus: buildResourceTypesMap(resourceTypes)
   });
+}
+
+function getResource(
+  state: ResourceModuleState,
+  type: ResourceType,
+  id: ResourceID
+): null | Object {
+  if (state.resources[type] == null) {
+    return null;
+  }
+
+  return state.resources[type][id.toString()] || null;
 }
 
 /**

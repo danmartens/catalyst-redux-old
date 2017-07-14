@@ -41,7 +41,7 @@ export default function CreateResourceOperation({
         const { data } = action.payload;
 
         return setResourceStatus(
-          addResource(state, data.type, data.id, data.attributes),
+          addResource(state, data),
           data.type,
           data.id,
           'create.success'

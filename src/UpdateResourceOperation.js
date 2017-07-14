@@ -59,7 +59,7 @@ export default function UpdateResourceOperation({
         const { data } = payload;
 
         return setResourceStatus(
-          addResource(state, data.type, data.id, data.attributes),
+          addResource(state, data),
           data.type,
           data.id,
           'update.success'

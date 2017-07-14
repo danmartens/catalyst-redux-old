@@ -42,6 +42,7 @@ test('UpdateResourceOperation', () => {
           '2': { id: 2, title: 'Second Post' }
         }
       },
+      resourceRelationships: {},
       resourceStatus: {}
     }
   });

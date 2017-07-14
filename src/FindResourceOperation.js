@@ -4,7 +4,7 @@ import axios from 'axios';
 import { put, call } from 'redux-saga/effects';
 
 import AsyncOperation from './AsyncOperation';
-import { addResource, setResourceStatus } from './utils';
+import { addResources, setResourceStatus } from './utils';
 import type {
   ResourceID,
   ResourceType,
@@ -51,12 +51,12 @@ export default function FindResourceOperation({
       }
 
       case 'success': {
-        const { data } = payload;
+        state = addResources(state, payload);
 
         return setResourceStatus(
-          addResource(state, data.type, data.id, data.attributes),
-          data.type,
-          data.id,
+          state,
+          payload.data.type,
+          payload.data.id,
           'find.success'
         );
       }
