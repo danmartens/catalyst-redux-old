@@ -32,22 +32,22 @@ const fetchArticles = AsyncOperation({
     switch (action.status) {
       case 'pending': {
         return {
-          ...state, 
+          ...state,
           fetchStatus: 'pending'
         };
       }
 
       case 'success': {
         return {
-          ...state, 
-          fetchStatus: 'success', 
+          ...state,
+          fetchStatus: 'success',
           articles: action.payload.data
         };
       }
 
       case 'error': {
         return {
-          ...state, 
+          ...state,
           fetchStatus: 'error'
         };
       }
@@ -93,3 +93,43 @@ counter.actions.increment()
 counter.actions.decrement()
 counter.selectors.getState()
 ```
+
+## ResourceModules
+
+ResourceModules consist of a predefined group of AsyncOperations that allow you
+to interact with a JSON API.
+
+ResourceModules require information about the types of resources you want to
+interact with and how to construct requests for them:
+
+```javascript
+const blog = ResourceModule('blog', {
+  resources: {
+    posts: {
+      resourcesURL: () => '/api/posts',
+      resourceURL: id => `/api/posts/${id}`
+    },
+    comments: {
+      resourcesURL: () => '/api/comments',
+      resourceURL: id => `/api/comments/${id}`
+    }
+  }
+});
+```
+
+This would provide you with the following API for interacting with posts and
+comments:
+
+```javascript
+blog.actions.findAll(type);
+blog.actions.find(type, id);
+blog.actions.create(type, attributes);
+blog.actions.update(type, id, attributes);
+blog.actions.destroy(type, id);
+
+blog.selectors.getAll(type);
+blog.selectors.getResource(type, id);
+blog.selectors.getStatus(type, id);
+```
+
+In this case, the "type" argument could be either `'posts'` or `'comments'`.
