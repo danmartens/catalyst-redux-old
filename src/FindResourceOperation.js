@@ -5,28 +5,36 @@ import { put, call } from 'redux-saga/effects';
 
 import AsyncOperation from './AsyncOperation';
 import { addResource, setResourceStatus } from './utils';
-import type { ResourceID, ResourceModuleState } from './types';
+import type {
+  ResourceID,
+  ResourceType,
+  ResourceModuleState,
+  ResourcesConfig
+} from './types';
 
 type Options = {
-  resourceURL: (id: ResourceID) => string,
+  resources: ResourcesConfig,
   normalizeResponse?: Function
 };
 
 export default function FindResourceOperation({
-  resourceURL,
+  resources,
   normalizeResponse = response => response.data
 }: Options) {
-  function actionCreator(resourceId: ResourceID) {
+  function actionCreator(resourceType: ResourceType, resourceId: ResourceID) {
     return {
-      payload: { id: resourceId },
+      payload: { type: resourceType, id: resourceId },
       status: null
     };
   }
 
-  function request(action: { payload: { id: ResourceID } }) {
-    return axios
-      .get(resourceURL(action.payload.id))
-      .then(response => normalizeResponse(response));
+  function request(action: {
+    payload: { type: ResourceType, id: ResourceID }
+  }) {
+    const { type, id } = action.payload;
+    const url = resources[type].resourceURL(id);
+
+    return axios.get(url).then(normalizeResponse);
   }
 
   function reducer(state: ResourceModuleState, action): ResourceModuleState {
@@ -34,21 +42,27 @@ export default function FindResourceOperation({
 
     switch (status) {
       case 'pending': {
-        return setResourceStatus(state, payload.id, 'find.pending');
+        return setResourceStatus(
+          state,
+          payload.type,
+          payload.id,
+          'find.pending'
+        );
       }
 
       case 'success': {
         const { data } = payload;
 
         return setResourceStatus(
-          addResource(state, data.id, data.attributes),
+          addResource(state, data.type, data.id, data.attributes),
+          data.type,
           data.id,
           'find.success'
         );
       }
 
       case 'error': {
-        return setResourceStatus(state, payload.id, 'find.error');
+        return setResourceStatus(state, payload.type, payload.id, 'find.error');
       }
     }
 
@@ -77,6 +91,7 @@ export default function FindResourceOperation({
           status: 'error',
           payload: {
             id: action.payload.id,
+            type: action.payload.type,
             error
           }
         });

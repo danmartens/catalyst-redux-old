@@ -4,27 +4,38 @@ import axios from 'axios';
 
 import AsyncOperation from './AsyncOperation';
 import { removeResource, setResourceStatus } from './utils';
-import type { ResourceID, ResourceModuleState } from './types';
+import type {
+  ResourceType,
+  ResourceID,
+  ResourceModuleState,
+  ResourcesConfig
+} from './types';
 
 type Options = {
-  resourceURL: (id: string | number) => string,
+  resources: ResourcesConfig,
   normalizeResponse?: Function
 };
 
 export default function DestroyResourceOperation({
-  resourceURL,
+  resources,
   normalizeResponse = response => response.data
 }: Options) {
-  function actionCreator(resourceId: ResourceID) {
+  function actionCreator(resourceType: ResourceType, resourceId: ResourceID) {
     return {
-      payload: { id: resourceId },
+      payload: { type: resourceType, id: resourceId },
       status: null
     };
   }
 
-  function request(action: { payload: { id: ResourceID } }) {
-    return axios.delete(resourceURL(action.payload.id)).then(() => ({
-      id: action.payload.id
+  function request(action: {
+    payload: { type: ResourceType, id: ResourceID }
+  }) {
+    const { type, id } = action.payload;
+    const url = resources[type].resourceURL(id);
+
+    return axios.delete(url).then(() => ({
+      type,
+      id
     }));
   }
 
@@ -33,12 +44,18 @@ export default function DestroyResourceOperation({
 
     switch (status) {
       case 'pending': {
-        return setResourceStatus(state, payload.id, 'destroy.pending');
+        return setResourceStatus(
+          state,
+          payload.type,
+          payload.id,
+          'destroy.pending'
+        );
       }
 
       case 'success': {
         return setResourceStatus(
-          removeResource(state, payload.id),
+          removeResource(state, payload.type, payload.id),
+          payload.type,
           payload.id,
           'destroy.success'
         );

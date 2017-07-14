@@ -4,28 +4,36 @@ import axios from 'axios';
 
 import AsyncOperation from './AsyncOperation';
 import { replaceResources } from './utils';
-import type { ResourceID, ResourceModuleState } from './types';
+import type {
+  ResourceType,
+  ResourceID,
+  ResourceModuleState,
+  ResourcesConfig
+} from './types';
 
 type Options = {
-  resourcesURL: () => string,
+  resources: ResourcesConfig,
   normalizeResponse?: Function
 };
 
 export default function FindAllResourcesOperation({
-  resourcesURL,
+  resources,
   normalizeResponse = response => response.data
 }: Options) {
-  function actionCreator() {
+  function actionCreator(resourceType: ResourceType) {
     return {
-      payload: null,
+      payload: {
+        type: resourceType
+      },
       status: null
     };
   }
 
-  function request(action: { payload: Object }) {
-    return axios
-      .get(resourcesURL())
-      .then(response => normalizeResponse(response));
+  function request(action: { payload: { type: string } }) {
+    const { type } = action.payload;
+    const url = resources[type].resourcesURL();
+
+    return axios.get(url).then(response => normalizeResponse(response));
   }
 
   function reducer(state: ResourceModuleState, action): ResourceModuleState {

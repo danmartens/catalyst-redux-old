@@ -1,6 +1,7 @@
 // @flow
 
 export type ResourceID = string | number;
+export type ResourceType = string;
 
 export type ResourceStatus =
   | null
@@ -18,6 +19,13 @@ export type ResourceStatus =
   | 'destroy.error';
 
 export type ResourceModuleState = {
-  resources: { [string]: Object },
-  resourceStatus: { [string]: ResourceStatus }
+  resources: { [ResourceType]: { [ResourceID]: Object } },
+  resourceStatus: { [ResourceType]: { [ResourceID]: ResourceStatus } }
+};
+
+export type ResourcesConfig = {
+  [ResourceType]: {|
+    resourceURL: (id: ResourceID) => string,
+    resourcesURL: () => string
+  |}
 };

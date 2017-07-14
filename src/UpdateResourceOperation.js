@@ -4,29 +4,41 @@ import axios from 'axios';
 
 import AsyncOperation from './AsyncOperation';
 import { addResource, setResourceStatus } from './utils';
-import type { ResourceID, ResourceModuleState } from './types';
+import type {
+  ResourceType,
+  ResourceID,
+  ResourceModuleState,
+  ResourcesConfig
+} from './types';
 
 type Options = {
-  resourceURL: (id: ResourceID) => string,
+  resources: ResourcesConfig,
   normalizeResponse?: Function
 };
 
 export default function UpdateResourceOperation({
-  resourceURL,
+  resources,
   normalizeResponse = response => response.data
 }: Options) {
-  function actionCreator(id: ResourceID, attributes: Object) {
+  function actionCreator(
+    type: ResourceType,
+    id: ResourceID,
+    attributes: Object
+  ) {
     return {
-      payload: { id, attributes },
+      payload: { type, id, attributes },
       status: null
     };
   }
 
   function request(action: {
-    payload: { id: ResourceID, attributes: Object }
+    payload: { type: ResourceType, id: ResourceID, attributes: Object }
   }) {
+    const { type, id } = action.payload;
+    const url = resources[type].resourceURL(id);
+
     return axios
-      .patch(resourceURL(action.payload.id), action.payload.attributes)
+      .patch(url, action.payload.attributes)
       .then(response => normalizeResponse(response));
   }
 
@@ -35,14 +47,20 @@ export default function UpdateResourceOperation({
 
     switch (status) {
       case 'pending': {
-        return setResourceStatus(state, payload.id, 'update.pending');
+        return setResourceStatus(
+          state,
+          payload.type,
+          payload.id,
+          'update.pending'
+        );
       }
 
       case 'success': {
         const { data } = payload;
 
         return setResourceStatus(
-          addResource(state, data.id, data.attributes),
+          addResource(state, data.type, data.id, data.attributes),
+          data.type,
           data.id,
           'update.success'
         );

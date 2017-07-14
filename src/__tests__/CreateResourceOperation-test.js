@@ -9,13 +9,17 @@ import { storeForModule, nextStoreState } from '../test-utils';
 
 import ResourceModule from '../ResourceModule';
 
-const posts = ResourceModule('posts', {
-  resourcesURL: () => '/api/posts',
-  resourceURL: id => `/api/posts/${id}`
+const resources = ResourceModule('resources', {
+  resources: {
+    posts: {
+      resourcesURL: () => '/api/posts',
+      resourceURL: id => `/api/posts/${id}`
+    }
+  }
 });
 
-const { create, destroy } = posts.actions;
-const { getResource, getStatus } = posts.selectors;
+const { create, destroy } = resources.actions;
+const { getResource, getStatus } = resources.selectors;
 
 afterEach(axios.__clearRegisteredResponses);
 
@@ -24,19 +28,20 @@ test('CreateResourceOperation', () => {
     return {
       data: {
         id: 1,
-        attributes: data
+        type: 'posts',
+        attributes: data.attributes
       }
     };
   });
 
-  const store = storeForModule(posts);
+  const store = storeForModule(resources);
 
-  store.dispatch(create({ title: 'A New Post' }));
+  store.dispatch(create('posts', { title: 'A New Post' }));
 
   return nextStoreState(store).then(state => {
-    expect(getStatus(state, 1)).toEqual('create.success');
+    expect(getStatus(state, 'posts', 1)).toEqual('create.success');
 
-    expect(getResource(state, 1)).toEqual({
+    expect(getResource(state, 'posts', 1)).toEqual({
       id: 1,
       title: 'A New Post'
     });

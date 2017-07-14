@@ -4,27 +4,34 @@ import axios from 'axios';
 
 import AsyncOperation from './AsyncOperation';
 import { addResource, setResourceStatus } from './utils';
-import type { ResourceID, ResourceModuleState } from './types';
+import type {
+  ResourceType,
+  ResourceID,
+  ResourceModuleState,
+  ResourcesConfig
+} from './types';
 
 type Options = {
-  resourcesURL: () => string,
+  resources: ResourcesConfig,
   normalizeResponse?: Function
 };
 
 export default function CreateResourceOperation({
-  resourcesURL,
+  resources,
   normalizeResponse = response => response.data
 }: Options) {
-  function actionCreator(attributes: Object) {
+  function actionCreator(resourceType: ResourceType, attributes: Object) {
     return {
-      payload: attributes,
+      payload: { type: resourceType, attributes },
       status: null
     };
   }
 
-  function request(action: { payload: Object }) {
+  function request(action: {
+    payload: { type: ResourceType, attributes: Object }
+  }) {
     return axios
-      .post(resourcesURL(), action.payload)
+      .post(resources[action.payload.type].resourcesURL(), action.payload)
       .then(response => normalizeResponse(response));
   }
 
@@ -34,7 +41,8 @@ export default function CreateResourceOperation({
         const { data } = action.payload;
 
         return setResourceStatus(
-          addResource(state, data.id, data.attributes),
+          addResource(state, data.type, data.id, data.attributes),
+          data.type,
           data.id,
           'create.success'
         );

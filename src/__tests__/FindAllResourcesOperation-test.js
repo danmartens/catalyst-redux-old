@@ -9,13 +9,17 @@ import { storeForModule, nextStoreState } from '../test-utils';
 
 import ResourceModule from '../ResourceModule';
 
-const posts = ResourceModule('posts', {
-  resourcesURL: () => '/api/posts',
-  resourceURL: id => `/api/posts/${id}`
+const resources = ResourceModule('resources', {
+  resources: {
+    posts: {
+      resourcesURL: () => '/api/posts',
+      resourceURL: id => `/api/posts/${id}`
+    }
+  }
 });
 
-const { findAll } = posts.actions;
-const { getAll } = posts.selectors;
+const { findAll } = resources.actions;
+const { getAll } = resources.selectors;
 
 afterEach(axios.__clearRegisteredResponses);
 
@@ -33,12 +37,12 @@ test('FindAllResourcesOperation success', () => {
     ]
   });
 
-  const store = storeForModule(posts);
+  const store = storeForModule(resources);
 
-  store.dispatch(findAll());
+  store.dispatch(findAll('posts'));
 
   return nextStoreState(store).then(state => {
-    expect(getAll(state)).toEqual([
+    expect(getAll(state, 'posts')).toEqual([
       {
         id: 1,
         title: 'First Post'

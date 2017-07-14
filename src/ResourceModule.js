@@ -10,49 +10,87 @@ import CreateResourceOperation from './CreateResourceOperation';
 import UpdateResourceOperation from './UpdateResourceOperation';
 import DestroyResourceOperation from './DestroyResourceOperation';
 
-import type { ResourceID, ResourceStatus, ResourceModuleState } from './types';
+import type {
+  ResourceID,
+  ResourceType,
+  ResourceStatus,
+  ResourceModuleState,
+  ResourcesConfig
+} from './types';
 
 export default function ResourceModule(
   moduleName: string,
   options: {
-    resourceURL: (id: ResourceID) => string,
-    resourcesURL: () => string
+    resources: ResourcesConfig
   }
 ) {
   const operationsMap = {
     findAll: FindAllResourcesOperation({
-      resourcesURL: options.resourcesURL
+      resources: options.resources
     }),
     find: FindResourceOperation({
-      resourceURL: options.resourceURL
+      resources: options.resources
     }),
     create: CreateResourceOperation({
-      resourcesURL: options.resourcesURL
+      resources: options.resources
     }),
     update: UpdateResourceOperation({
-      resourceURL: options.resourceURL
+      resources: options.resources
     }),
     destroy: DestroyResourceOperation({
-      resourceURL: options.resourceURL
+      resources: options.resources
     })
   };
 
   const selectors = {
-    getAll(state: ResourceModuleState) {
+    getAll(state: ResourceModuleState, type: ResourceType) {
       return values(state.resources);
     },
 
-    getResource(state: ResourceModuleState, id: ResourceID) {
-      return state.resources[id.toString()];
+    getResource(
+      state: ResourceModuleState,
+      type: ResourceType,
+      id: ResourceID
+    ): null | Object {
+      if (state.resources[type] == null) {
+        return null;
+      }
+
+      return state.resources[type][id.toString()] || null;
     },
 
-    getStatus(state: ResourceModuleState, id: ResourceID): ResourceStatus {
-      return state.resourceStatus[id.toString()];
+    getStatus(
+      state: ResourceModuleState,
+      type: ResourceType,
+      id: ResourceID
+    ): ResourceStatus {
+      if (state.resources[type] == null) {
+        return null;
+      }
+
+      return state.resourceStatus[type][id.toString()] || null;
     }
   };
 
+  const resourceTypes = Object.keys(options.resources);
+
   return Module(moduleName, operationsMap, selectors)({
-    resources: {},
-    resourceStatus: {}
+    resources: buildResourceTypesMap(resourceTypes),
+    resourceStatus: buildResourceTypesMap(resourceTypes)
   });
+}
+
+/**
+ * Builds a new object for storing data broken down by resource types.
+ */
+function buildResourceTypesMap(
+  resourceTypes: Array<string>
+): { [string]: Object } {
+  const map = {};
+
+  resourceTypes.forEach(resourceType => {
+    map[resourceType] = {};
+  });
+
+  return map;
 }

@@ -9,13 +9,17 @@ import { storeForModule, nextStoreState } from '../test-utils';
 
 import ResourceModule from '../ResourceModule';
 
-const posts = ResourceModule('posts', {
-  resourcesURL: () => '/api/posts',
-  resourceURL: id => `/api/posts/${id}`
+const resources = ResourceModule('resources', {
+  resources: {
+    posts: {
+      resourcesURL: () => '/api/posts',
+      resourceURL: id => `/api/posts/${id}`
+    }
+  }
 });
 
-const { update } = posts.actions;
-const { getResource, getStatus } = posts.selectors;
+const { update } = resources.actions;
+const { getResource, getStatus } = resources.selectors;
 
 afterEach(axios.__clearRegisteredResponses);
 
@@ -24,38 +28,41 @@ test('UpdateResourceOperation', () => {
     return {
       data: {
         id: 1,
+        type: 'posts',
         attributes: data
       }
     };
   });
 
-  const store = storeForModule(posts, {
-    posts: {
+  const store = storeForModule(resources, {
+    resources: {
       resources: {
-        '1': { id: 1, title: 'First Post' },
-        '2': { id: 2, title: 'Second Post' }
+        posts: {
+          '1': { id: 1, title: 'First Post' },
+          '2': { id: 2, title: 'Second Post' }
+        }
       },
       resourceStatus: {}
     }
   });
 
   store.dispatch(
-    update(1, {
+    update('posts', 1, {
       title: 'Edited Post'
     })
   );
 
-  expect(getStatus(store.getState(), 1)).toEqual('update.pending');
+  expect(getStatus(store.getState(), 'posts', 1)).toEqual('update.pending');
 
   return nextStoreState(store).then(state => {
-    expect(getStatus(state, 1)).toEqual('update.success');
+    expect(getStatus(state, 'posts', 1)).toEqual('update.success');
 
-    expect(getResource(state, 1)).toEqual({
+    expect(getResource(state, 'posts', 1)).toEqual({
       id: 1,
       title: 'Edited Post'
     });
 
-    expect(getResource(state, 2)).toEqual({
+    expect(getResource(state, 'posts', 2)).toEqual({
       id: 2,
       title: 'Second Post'
     });

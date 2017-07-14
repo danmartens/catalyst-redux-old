@@ -1,6 +1,11 @@
 // @flow
 
-import type { ResourceID, ResourceStatus, ResourceModuleState } from './types';
+import type {
+  ResourceType,
+  ResourceID,
+  ResourceStatus,
+  ResourceModuleState
+} from './types';
 
 export function reducerForActionType(
   reducer: (state: *, action: *) => *,
@@ -17,12 +22,20 @@ export function reducerForActionType(
 
 export function addResource(
   state: ResourceModuleState,
+  type: ResourceType,
   id: ResourceID,
   attributes: Object
 ): ResourceModuleState {
+  if (state.resources[type] == null) {
+    return state;
+  }
+
   const resources = {
     ...state.resources,
-    [id.toString()]: { id, ...attributes }
+    [type]: {
+      ...state.resources[type],
+      [id.toString()]: { id, ...attributes }
+    }
   };
 
   return {
@@ -50,13 +63,21 @@ export function replaceResources(
 
 export function removeResource(
   state: ResourceModuleState,
+  type: ResourceType,
   id: ResourceID
 ): ResourceModuleState {
+  if (state.resources[type] == null) {
+    return state;
+  }
+
   const resources = {
-    ...state.resources
+    ...state.resources,
+    [type]: {
+      ...state.resources[type]
+    }
   };
 
-  delete resources[id.toString()];
+  delete resources[type][id.toString()];
 
   return {
     ...state,
@@ -66,14 +87,22 @@ export function removeResource(
 
 export function setResourceStatus(
   state: ResourceModuleState,
+  type: ResourceType,
   id: ResourceID,
   status: ResourceStatus
 ) {
+  if (state.resources[type] == null) {
+    return state;
+  }
+
   return {
     ...state,
     resourceStatus: {
       ...state.resourceStatus,
-      [id]: status
+      [type]: {
+        ...state.resourceStatus[type],
+        [id]: status
+      }
     }
   };
 }

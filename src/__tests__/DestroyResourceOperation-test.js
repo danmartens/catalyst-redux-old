@@ -9,37 +9,43 @@ import { storeForModule, nextStoreState } from '../test-utils';
 
 import ResourceModule from '../ResourceModule';
 
-const posts = ResourceModule('posts', {
-  resourcesURL: () => '/api/posts',
-  resourceURL: id => `/api/posts/${id}`
+const resources = ResourceModule('resources', {
+  resources: {
+    posts: {
+      resourcesURL: () => '/api/posts',
+      resourceURL: id => `/api/posts/${id}`
+    }
+  }
 });
 
-const { destroy } = posts.actions;
-const { getResource, getStatus } = posts.selectors;
+const { destroy } = resources.actions;
+const { getResource, getStatus } = resources.selectors;
 
 afterEach(axios.__clearRegisteredResponses);
 
 test('DestroyResourceOperation', () => {
   axios.__registerResponse('DELETE', '/api/posts/1', {});
 
-  const store = storeForModule(posts, {
-    posts: {
+  const store = storeForModule(resources, {
+    resources: {
       resources: {
-        '1': { id: 1, title: 'First Post' },
-        '2': { id: 2, title: 'Second Post' }
+        posts: {
+          '1': { id: 1, title: 'First Post' },
+          '2': { id: 2, title: 'Second Post' }
+        }
       },
-      resourceStatus: {}
+      resourceStatus: { posts: {} }
     }
   });
 
-  store.dispatch(destroy(1));
+  store.dispatch(destroy('posts', 1));
 
-  expect(getStatus(store.getState(), 1)).toEqual('destroy.pending');
+  expect(getStatus(store.getState(), 'posts', 1)).toEqual('destroy.pending');
 
   return nextStoreState(store).then(state => {
-    expect(getStatus(state, 1)).toEqual('destroy.success');
-    expect(getResource(state, 1)).toEqual(undefined);
-    expect(getResource(state, 2)).toEqual({
+    expect(getStatus(state, 'posts', 1)).toEqual('destroy.success');
+    expect(getResource(state, 'posts', 1)).toEqual(null);
+    expect(getResource(state, 'posts', 2)).toEqual({
       id: 2,
       title: 'Second Post'
     });
