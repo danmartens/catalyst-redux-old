@@ -44,52 +44,10 @@ export default function ResourceModule(
   };
 
   const selectors = {
-    getAll(state: ResourceModuleState, type: ResourceType) {
-      return values(state.resources[type]);
-    },
-
+    getAll,
     getResource,
-
-    getRelated(
-      state: ResourceModuleState,
-      type: ResourceType,
-      id: ResourceID,
-      relationshipName: RelationshipName
-    ): null | Object | Array<?Object> {
-      if (
-        state.resourceRelationships[type] == null ||
-        state.resourceRelationships[type][id] == null
-      ) {
-        return null;
-      }
-
-      const relationship =
-        state.resourceRelationships[type][id][relationshipName];
-
-      if (relationship == null) {
-        return null;
-      }
-
-      if (relationship instanceof Array) {
-        return relationship.map(r => {
-          return getResource(state, r.type, r.id);
-        });
-      } else {
-        return getResource(state, relationship.type, relationship.id);
-      }
-    },
-
-    getStatus(
-      state: ResourceModuleState,
-      type: ResourceType,
-      id: ResourceID
-    ): ResourceStatus {
-      if (state.resources[type] == null) {
-        return null;
-      }
-
-      return state.resourceStatus[type][id.toString()] || null;
-    }
+    getRelated,
+    getStatus
   };
 
   const resourceTypes = Object.keys(options.resources);
@@ -99,6 +57,10 @@ export default function ResourceModule(
     resourceRelationships: buildResourceTypesMap(resourceTypes),
     resourceStatus: buildResourceTypesMap(resourceTypes)
   });
+}
+
+function getAll(state: ResourceModuleState, type: ResourceType) {
+  return values(state.resources[type]);
 }
 
 function getResource(
@@ -111,6 +73,46 @@ function getResource(
   }
 
   return state.resources[type][id.toString()] || null;
+}
+
+function getRelated(
+  state: ResourceModuleState,
+  type: ResourceType,
+  id: ResourceID,
+  relationshipName: RelationshipName
+): null | Object | Array<?Object> {
+  if (
+    state.resourceRelationships[type] == null ||
+    state.resourceRelationships[type][id] == null
+  ) {
+    return null;
+  }
+
+  const relationship = state.resourceRelationships[type][id][relationshipName];
+
+  if (relationship == null) {
+    return null;
+  }
+
+  if (relationship instanceof Array) {
+    return relationship.map(r => {
+      return getResource(state, r.type, r.id);
+    });
+  } else {
+    return getResource(state, relationship.type, relationship.id);
+  }
+}
+
+function getStatus(
+  state: ResourceModuleState,
+  type: ResourceType,
+  id: ResourceID
+): ResourceStatus {
+  if (state.resources[type] == null) {
+    return null;
+  }
+
+  return state.resourceStatus[type][id.toString()] || null;
 }
 
 /**
