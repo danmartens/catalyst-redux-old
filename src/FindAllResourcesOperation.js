@@ -39,7 +39,7 @@ export default function FindAllResourcesOperation({
   function reducer(state: ResourceModuleState, action): ResourceModuleState {
     switch (action.status) {
       case 'success': {
-        return replaceResources(state, action.payload.data);
+        return replaceResources(state, action.payload);
       }
     }
 

@@ -45,7 +45,7 @@ export default function ResourceModule(
 
   const selectors = {
     getAll(state: ResourceModuleState, type: ResourceType) {
-      return values(state.resources);
+      return values(state.resources[type]);
     },
 
     getResource,

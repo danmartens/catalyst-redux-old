@@ -39,15 +39,17 @@ export type ResourcesConfig = {
   |}
 };
 
+export type JSONAPIRelationships = {
+  [RelationshipName]: {
+    data: Relationship | Array<Relationship>
+  }
+};
+
 export type JSONAPIResource = {|
   type: ResourceType,
   id: ResourceID,
   attributes: Object,
-  relationships?: {
-    [RelationshipName]: {
-      data: Relationship | Array<Relationship>
-    }
-  }
+  relationships?: JSONAPIRelationships
 |};
 
 export type JSONAPIDocument = {|

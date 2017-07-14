@@ -69,8 +69,10 @@ test('FindResourceOperation deserializes included resources', () => {
       type: 'posts',
       attributes: { title: 'Test Post' },
       relationships: {
-        author: { type: 'users', id: 1 },
-        comments: [{ type: 'comments', id: 1 }, { type: 'comments', id: 2 }]
+        author: { data: { type: 'users', id: 1 } },
+        comments: {
+          data: [{ type: 'comments', id: 1 }, { type: 'comments', id: 2 }]
+        }
       }
     },
     included: [

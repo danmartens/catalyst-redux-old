@@ -5,8 +5,10 @@ import type {
   ResourceID,
   ResourceStatus,
   ResourceModuleState,
+  Relationship,
   JSONAPIDocument,
-  JSONAPIResource
+  JSONAPIResource,
+  JSONAPIRelationships
 } from './types';
 
 export function reducerForActionType(
@@ -42,7 +44,7 @@ export function addResource(
     ...state.resourceRelationships,
     [resource.type]: {
       ...state.resourceRelationships[resource.type],
-      [resource.id.toString()]: resource.relationships || null
+      [resource.id.toString()]: mapRelationships(resource.relationships)
     }
   };
 
@@ -76,19 +78,21 @@ export function addResources(
 
 export function replaceResources(
   state: ResourceModuleState,
-  data: Array<JSONAPIResource>
+  resources: JSONAPIDocument
 ): ResourceModuleState {
-  const resources = data.reduce((resources, resource) => {
-    return {
-      ...resources,
-      [resource.id]: { id: resource.id, ...resource.attributes }
+  if (resources.data instanceof Array && resources.data.length > 0) {
+    state = {
+      ...state,
+      resources: {
+        ...state.resources,
+        [resources.data[0].type]: {}
+      }
     };
-  }, {});
 
-  return {
-    ...state,
-    resources
-  };
+    return addResources(state, resources);
+  } else {
+    return state;
+  }
 }
 
 export function removeResource(
@@ -135,4 +139,20 @@ export function setResourceStatus(
       }
     }
   };
+}
+
+function mapRelationships(relationships: ?JSONAPIRelationships) {
+  if (relationships == null) {
+    return {};
+  }
+
+  const map = {};
+
+  for (const relationshipName in relationships) {
+    if (relationships.hasOwnProperty(relationshipName)) {
+      map[relationshipName] = relationships[relationshipName].data;
+    }
+  }
+
+  return map;
 }
