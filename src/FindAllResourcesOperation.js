@@ -33,7 +33,13 @@ export default function FindAllResourcesOperation({
     const { type } = action.payload;
     const url = resources[type].resourcesURL();
 
-    return axios.get(url).then(response => normalizeResponse(response));
+    return axios.get(url).then(response => {
+      if (typeof resources[type].normalizeResponse === 'function') {
+        return resources[type].normalizeResponse(response);
+      } else {
+        return normalizeResponse(response);
+      }
+    });
   }
 
   function reducer(state: ResourceModuleState, action): ResourceModuleState {

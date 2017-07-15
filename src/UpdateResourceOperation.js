@@ -37,9 +37,13 @@ export default function UpdateResourceOperation({
     const { type, id } = action.payload;
     const url = resources[type].resourceURL(id);
 
-    return axios
-      .patch(url, action.payload.attributes)
-      .then(response => normalizeResponse(response));
+    return axios.patch(url, action.payload.attributes).then(response => {
+      if (typeof resources[type].normalizeResponse === 'function') {
+        return resources[type].normalizeResponse(response);
+      } else {
+        return normalizeResponse(response);
+      }
+    });
   }
 
   function reducer(state: ResourceModuleState, action): ResourceModuleState {

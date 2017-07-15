@@ -30,9 +30,18 @@ export default function CreateResourceOperation({
   function request(action: {
     payload: { type: ResourceType, attributes: Object }
   }) {
+    const { type } = action.payload;
+    const url = resources[type].resourcesURL();
+
     return axios
       .post(resources[action.payload.type].resourcesURL(), action.payload)
-      .then(response => normalizeResponse(response));
+      .then(response => {
+        if (typeof resources[type].normalizeResponse === 'function') {
+          return resources[type].normalizeResponse(response);
+        } else {
+          return normalizeResponse(response);
+        }
+      });
   }
 
   function reducer(state: ResourceModuleState, action): ResourceModuleState {

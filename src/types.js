@@ -35,7 +35,8 @@ export type ResourceModuleState = {
 export type ResourcesConfig = {
   [ResourceType]: {|
     resourceURL: (id: ResourceID) => string,
-    resourcesURL: () => string
+    resourcesURL: () => string,
+    normalizeResponse?: (response: Object) => JSONAPIDocument
   |}
 };
 
